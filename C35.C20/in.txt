@@ -1,0 +1,18 @@
+This is a plaintext sentence
+This is a plaintext sentence
+This is a plaintext sentence
+more text more text words words words
+longer file, more words, DIFFERENT CHARACTERS!
+I need to make this file long enough that the encrypt-module will restart and choose a new key value.
+Fouder mister printer the Nowing ones complane of my book the fust edition
+had no stops I put in A Nuf here and thay may peper and solt it as they plese
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+::::::::::::::::::::::::::::::::
+............!!!!!!!!............
+.............!!!!!!.............
+..............!!!!..............
+...............!!...............
+''''''''''''''''''''''''''''''''
+........????????????????........

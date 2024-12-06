@@ -20,11 +20,11 @@ int init_buffers() {
   printf("Enter output buffer size: ");
   scanf("%d", &output_size);
   if (cb_init(input_buffer, input_size) != 0) {
-    printf("\nFatal: Failed to initialize input buffer\n");
+    printf("Fatal: Failed to initialize input buffer\n");
     return 1;
   }
   if (cb_init(output_buffer, output_size) != 0) {
-    printf("\nFatal: Failed to initialize output buffer\n");
+    printf("Fatal: Failed to initialize output buffer\n");
     return 1;
   }
 
@@ -140,8 +140,7 @@ void *writer() {
 }
 
 void reset_requested() {
-  printf("Reset requested.\n");
-  pthread_mutex_lock(&rc->reset_mutex);
+  pthread_mutex_lock(rc->reset_mutex);
 
   int inputs = get_input_total_count();
   int outputs = get_output_total_count();
@@ -162,18 +161,17 @@ void reset_requested() {
 
 	log_counts();
 
-  pthread_mutex_unlock(&rc->reset_mutex);
+  pthread_mutex_unlock(rc->reset_mutex);
 }
 
 void reset_finished() {
-  printf("Reset finished.\n");
-  pthread_mutex_lock(&rc->reset_mutex);
+  pthread_mutex_lock(rc->reset_mutex);
 
   rc->reset_in_progress = 0;
 
   pthread_cond_broadcast(rc->reset_cond);
 
-  pthread_mutex_unlock(&rc->reset_mutex);
+  pthread_mutex_unlock(rc->reset_mutex);
 }
 
 int main(int argc, char *argv[]) {
@@ -183,15 +181,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 	// init("in.txt", "out.txt", "log.txt"); 
-  printf("\nInitializing encryption module\n");
   init(argv[1], argv[2], argv[3]);
 
-  printf("Initializing buffers\n");
   if (init_buffers()) {
     return 1;
   }
 
-  printf("Initializing Reset Controller\n");
   rc = malloc(sizeof(ResetController));
   rc_init(rc);
 
@@ -202,18 +197,12 @@ int main(int argc, char *argv[]) {
 	//	count_output(c); 
 	//	write_output(c); 
 	//} 
-  printf("Creating threads:\n");
   pthread_t read_thread, input_count_thread, encrypt_thread, output_count_thread, write_thread;
   pthread_create(&read_thread, NULL, &reader, NULL);
-  printf("| Reader /");
   pthread_create(&input_count_thread, NULL, &input_counter, NULL);
-  printf(" Input Counter /");
   pthread_create(&encrypt_thread, NULL, &encryptor, NULL);
-  printf(" Encryptor /");
   pthread_create(&output_count_thread, NULL, &output_counter, NULL);
-  printf(" Output Counter /");
   pthread_create(&write_thread, NULL, &writer, NULL);
-  printf(" Writer |\n");
 
   pthread_join(read_thread, NULL);
   pthread_join(input_count_thread, NULL);

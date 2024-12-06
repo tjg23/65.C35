@@ -157,7 +157,8 @@ void reset_requested() {
   }
   rc->reset_in_progress = 1;
 
-  while(get_input_total_count() != get_output_total_count()) {}
+  // while(get_input_total_count() != get_output_total_count()) {}
+  pthread_cond_wait(rc->reset_ready, rc->reset_mutex);
 
 	log_counts();
 

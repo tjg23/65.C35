@@ -1,12 +1,14 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <fcntl.h>
+#include "encrypt_module.h"
 
 typedef struct {
   int reset_in_progress;
 
   pthread_mutex_t *reset_mutex;
   pthread_cond_t *reset_cond;
+  pthread_cond_t *reset_ready;
 
   sem_t *sem_thread_lock[5];
 } ResetController;
@@ -18,6 +20,8 @@ void rc_init(ResetController *rc) {
   pthread_mutex_init(rc->reset_mutex, NULL);
   rc->reset_cond = malloc(sizeof(pthread_cond_t));
   pthread_cond_init(rc->reset_cond, NULL);
+  rc->reset_ready = malloc(sizeof(pthread_cond_t));
+  pthread_cond_init(rc->reset_ready, NULL);
 
   rc->sem_thread_lock[0] = sem_open("/sem_read_lock", O_CREAT, 0644, 0);
   sem_unlink("/sem_read_lock");
@@ -40,6 +44,9 @@ int thread_block(ResetController *rc, int thread) {
 
   int s = sem_trywait(rc->sem_thread_lock[thread]);
   if (!s) {
+    if (get_input_total_count() == get_output_total_count()) {
+      pthread_cond_signal(rc->reset_ready);
+    }
     pthread_mutex_unlock(rc->reset_mutex);
     return 0;
   }

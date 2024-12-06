@@ -1,12 +1,13 @@
 #include <stdio.h>
+#include <fcntl.h>
 #include "encrypt-module.h"
 #include "circular-buffer.h"
+#include "reset-controller.h"
 
 CircularBuffer *input_buffer;
 CircularBuffer *output_buffer;
 
-sem_t *sem_input_lock;
-sem_t *sem_output_lock;
+ResetController *rc;
 
 int init_buffers() {
   int input_size, output_size;
@@ -39,103 +40,138 @@ void destroy_buffers() {
 
 void *reader() {
   char c;
-  while ((c = read_input()) != EOF) {
-    cb_put(input_buffer, c);
-  }
-  cb_put(input_buffer, c);
-  return 0;
-  // while (true) {
-    // sem_wait(sem_input_lock);
-    // c = read_input();
+  // while ((c = read_input()) != EOF) {
     // cb_put(input_buffer, c);
-    // sem_post(sem_input_lock);
-    // if (c == EOF) {
-      // return;
-    // }
   // }
+  // cb_put(input_buffer, c);
+  // return 0;
+  while (1) {
+    if (thread_block(rc, 0)) {
+      continue;
+    }
+
+    c = read_input();
+    cb_put(input_buffer, c);
+    if (c == EOF) {
+      return 0;
+    }
+  }
 }
 
 void *input_counter() {
   char c;
-  while ((c = cb_get(input_buffer, 0)) != EOF) {
+  // while ((c = cb_get(input_buffer, 0)) != EOF) {
+    // count_input(c);
+  // }
+  // return 0;
+  while (1) {
+    if (thread_block(rc, 1)) {
+      continue;
+    }
+
+    c = cb_get(input_buffer, 0);
+    if (c == EOF) {
+      return 0;
+    }
     count_input(c);
   }
-  return 0;
-  // while (true) {
-    // sem_wait(sem_input_lock);
-    // c = cb_get(input_buffer, 0);
-    // if (c != EOF) {
-      // count_input(c);
-    // }
-    // sem_post(sem_input_lock);
-    // if (c == EOF) {
-      // return;
-    // }
-  // }
 }
 
 void *encryptor() {
   char c, e;
-  while ((c = cb_get(input_buffer, 1)) != EOF) {
+  // while ((c = cb_get(input_buffer, 1)) != EOF) {
+    // e = encrypt(c);
+    // cb_put(output_buffer, e);
+  // }
+  // cb_put(output_buffer, c);
+  // return 0;
+  while (1) {
+    if (thread_block(rc, 2)) {
+      continue;
+    }
+
+    c = cb_get(input_buffer, 1);
+    if (c == EOF) {
+      cb_put(output_buffer, c);
+      return 0;
+    }
     e = encrypt(c);
     cb_put(output_buffer, e);
   }
-  cb_put(output_buffer, c);
-  return 0;
 }
 
 void *output_counter() {
   char c;
-  while ((c = cb_get(output_buffer, 0)) != EOF) {
+  // while ((c = cb_get(output_buffer, 0)) != EOF) {
+    // count_output(c);
+  // }
+  // return 0;
+  while (1) {
+    if (thread_block(rc, 3)) {
+      continue;
+    }
+
+    c = cb_get(output_buffer, 0);
+    if (c == EOF) {
+      return 0;
+    }
     count_output(c);
   }
-  return 0;
-  // while (true) {
-    // sem_wait(sem_output_lock);
-    // c = cb_get(output_buffer, 0);
-    // if (c != EOF) {
-      // count_output(c);
-    // }
-    // sem_post(sem_output_lock);
-    // if (c == EOF) {
-      // return;
-    // }
-  // }
 }
 
 void *writer() {
   char c;
-  while ((c = cb_get(output_buffer, 1)) != EOF) {
-    write_output(c);
-  }
-  write_output(c);
-  return 0;
-  // while (true) {
-    // sem_wait(sem_output_lock);
-    // c = cb_get(output_buffer, 1);
+  // while ((c = cb_get(output_buffer, 1)) != EOF) {
     // write_output(c);
-    // sem_post(sem_output_lock);
-    // if (c == EOF) {
-      // return;
-    // }
   // }
+  // write_output(c);
+  // return 0;
+  while (1) {
+    if (thread_block(rc, 4)) {
+      continue;
+    }
+
+    c = cb_get(output_buffer, 1);
+    write_output(c);
+    if (c == EOF) {
+      return 0;
+    }
+  }
 }
 
 void reset_requested() {
-  // sem_wait(sem_input_lock);
-  // sem_wait(sem_input_lock);
-  // sem_wait(sem_output_lock);
-  // sem_wait(sem_output_lock);
+  pthread_mutex_lock(rc->reset_mutex);
 
   int inputs = get_input_total_count();
   int outputs = get_output_total_count();
 
-  // while ()
+  while (inputs < outputs) {
+    sem_post(rc->sem_thread_lock[0]);
+    sem_post(rc->sem_thread_lock[1]);
+    inputs++;
+  }
+  while (outputs < inputs) {
+    sem_post(rc->sem_thread_lock[3]);
+    sem_post(rc->sem_thread_lock[4]);
+    outputs++;
+  }
+  rc->reset_in_progress = 1;
+
+  while(get_input_total_count() != get_output_total_count()) {}
 
 	log_counts();
+
+  pthread_mutex_unlock(rc->reset_mutex);
 }
 
 void reset_finished() {
+  pthread_mutex_lock(rc->reset_mutex);
+
+  rc->reset_in_progress = 0;
+
+  pthread_cond_broadcast(rc->reset_cond);
+
+  pthread_mutex_unlock(rc->reset_mutex);
 }
 
 int main(int argc, char *argv[]) {
@@ -151,10 +187,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  sem_input_lock = sem_open("/sem_input_lock", O_CREAT, 0644, 2);
-  sem_unlink("/sem_input_lock");
-  sem_output_lock = sem_open("/sem_output_lock", O_CREAT, 0644, 2);
-  sem_unlink("/sem_output_lock");
+  rc_init(rc);
 
 	// char c;
 	// while ((c = read_input()) != EOF) { 

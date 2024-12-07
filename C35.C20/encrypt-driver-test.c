@@ -1,29 +1,13 @@
-/**********************************************************
- * The main source file for the encrypt driver.           *
- * Contains the declarations for the input and output     *
- * buffers and the global ResetController. Defines the    *
- * functions to be called by the five threads and creates *
- * the threads to call them in `main()`. Implements the   *
- * functions `reset_requested()` and `reset_finished()`   *
- * as declared in `encrypt-module.h`, to be called from   *
- * `encrypt-module.c`.
- **********************************************************/
 #include <fcntl.h>
 #include "encrypt-module.h"
 #include "circular-buffer.h"
 #include "reset-controller.h"
 
-/**
- * Declare global variables for the buffers and reset controller
- */
 CircularBuffer *input_buffer;
 CircularBuffer *output_buffer;
 
 ResetController *rc;
 
-/**
- * Initialize the buffers, prompting the user for their sizes.
- */
 int init_buffers() {
   int input_size, output_size;
 
@@ -46,9 +30,6 @@ int init_buffers() {
   return 0;
 }
 
-/**
- * Destroy the buffers and free their memory.
- */
 void destroy_buffers() {
   cb_destroy(input_buffer);
   cb_destroy(output_buffer);
@@ -56,9 +37,6 @@ void destroy_buffers() {
   free(output_buffer);
 }
 
-/**
- * Function to be run by the reader thread.
- */
 void *reader() {
   char c;
   while (1) {
@@ -74,9 +52,6 @@ void *reader() {
   }
 }
 
-/**
- * Function to be run by the input counter thread.
- */
 void *input_counter() {
   char c;
   while (1) {
@@ -92,9 +67,6 @@ void *input_counter() {
   }
 }
 
-/**
- * Function to be run by the encryptor thread.
- */
 void *encryptor() {
   char c, e;
   while (1) {
@@ -112,9 +84,6 @@ void *encryptor() {
   }
 }
 
-/**
- * Function to be run by the output counter thread.
- */
 void *output_counter() {
   char c;
   while (1) {
@@ -130,9 +99,6 @@ void *output_counter() {
   }
 }
 
-/**
- * Function to be run by the writer thread.
- */
 void *writer() {
   char c;
   while (1) {
@@ -148,17 +114,6 @@ void *writer() {
   }
 }
 
-/**
- * Called when the encrypt-module requests a reset, so the
- * input and output counts can be synchronized before the
- * reset is performed.
- * Acquires a lock on the global ResetController to block
- * all driver threads, then compares the total input and
- * output counts and resumes the side that is behind.
- * Waits for one of those threads to signal `reset_ready`
- * when the counts are equal before returning and allowing
- * the reset to complete.
- */
 void reset_requested() {
   pthread_mutex_lock(rc->reset_mutex);
   printf("Reset Requested.\n");
@@ -184,16 +139,10 @@ void reset_requested() {
   }
   printf("Counts are synced. Logging counts.\n");
 
-	log_counts();
-
   printf("Performing reset.\n");
   pthread_mutex_unlock(rc->reset_mutex);
 }
 
-/**
- * Called when the encrypt-module completes a reset so the
- * driver threads can be resumed.
- */
 void reset_finished() {
   pthread_mutex_lock(rc->reset_mutex);
   printf("Reset finished.\n");
@@ -206,18 +155,10 @@ void reset_finished() {
   pthread_mutex_unlock(rc->reset_mutex);
 }
 
-/** Main function
- * Entry point of the program - reads the input file name,
- * output file name, and log file name from the arguments
- * and initializes the encrypt-module, then initializes the
- * input and output buffers and the reset controller.
- * Finally creates the five driver threads and waits for them
- * to complete and logs the final input and output counts.
- */
 int main(int argc, char *argv[]) {
 
-  if (argc != 4) {
-    printf("Incorrect arguments.\nCorrect Usage: `encrypt <input_file> <output_file> <log_file>`\n");
+  if (argc != 3) {
+    printf("Incorrect arguments.\nCorrect Usage: `encrypt-test <input_file> <output_file> `\n");
     return 1;
   }
 	// init("in.txt", "out.txt", "log.txt"); 
@@ -245,5 +186,4 @@ int main(int argc, char *argv[]) {
 
 	printf("End of file reached.\n"); 
   destroy_buffers();
-	log_counts();
 }

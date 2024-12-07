@@ -1,1 +1,29 @@
-$jgoefg!FODSZQU`I$efgjof!FODSZQU`I0+!Zpv!nvtu!jnqmfnfou!uijt!gvodujpo/!+!Xifo!uif!gvodujpo!sfuvsot!uif!fodszqujpo!npevmf!jt!bmmpxfe!up!sftfu/!+0wpje!sftfu`sfrvftufe)*<0+!Zpv!nvtu!jnqmfnfou!uijt!gvodujpo/!+!Uif!gvodujpo!jt!dbmmfe!bgufs!uif!fodszqujpo!npevmf!ibt!gjojtife!b!sftfu/!+0wpje!sftfu`gjojtife)*<0+!Zpv!nvtu!vtf!uiftf!g{tizouty&zu&vkxluxs&grr&O5U2&ktix!vzout&gtj&iu{tzotm&0&uvkxgzouty4&05|uoj&otoz.ingx&0otv{zLorkTgsk2&ingx&0u{zv{zLorkTgsk2&ingx&0rumLorkTgsk/Aotz&xkgjeotv{z./A|uoj&}xozkeu{zv{z.otz&i/A|uoj&rumeiu{tzy./Aotz&ktix!vz.otz&i/A|uoj&iu{tzeotv{z.otz&i/A|uoj&iu{tzeu{zv{z.otz&i/Aotz&mkzeotv{zjnz"y!3ty!+n4Fty!+rp!jz"!{"!jnz"y!3ty!+n4Fty!+rp!jty{"!j!z!lwjnz"y!34Fty!+rp!jz"!{"!j!z!lwjnz"y!34F.pyotq+::+PYN]d[_jS
+#jgoefg FODSZQU_I
+#efgjof FODSZQU_I
+
+/* Zpv nvtu jnqmfnfou uijt gvodujpo.
+ * Xifo uif gvodujpo sfuvsot uif fodszqujpo npevmf jt bmmpxfe up sftfu.
+ */
+wpje sftfu_sfrvftufe();
+/* Zpv nvtu jnqmfngpv vjku hwpevkqp.
+ * Vjg hwpevkqp ku ecnngf chvgt vjg gpetarvkqp oqfwng jcu hkpkujgf c tgugv.
+ */
+xqkf tgugv_hkpkujgf();
+
+/* Aqw owuv wug vjgug hwpevkqpu vq rgthqto cnn K/Q, gpetarvkqp cpf eqwpvlqj
+ * rshudwlrqv.
+ */
+yrlg lqlw(fkdu *lqsxwIlohQdph, fkdu *rxwsxwIlohQdph, fkdu *orjIlohQdph);
+lqw uhdg_lqsxw();
+yrlg zulwh_rxwsxw(lqw f);
+yrlg orj_frxqwv();
+lqw hqfubsw(lqw f);
+yrlg frxqw_lqtyx(mrx g);
+zsmh gsyrx_syxtyx(mrx g);
+mrx kix_mrtyx_gsyrx(mrx g);
+mrx kix_syxtyx_gsyrx(mrx g);
+mrx kix_mrtyx_xsxep_gsyrx();
+mrx kix_syxtyx_xsxep_gsyrx();
+
+#irhmj // IRGVCTX_L
+
